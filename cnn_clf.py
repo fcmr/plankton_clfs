@@ -49,44 +49,48 @@ def LoadModel(in_shape, num_classes):
     # in keras
     model = Sequential()
 
+    a = 0.3
+
     # This looks like they call l1 in the code
-    model.add(Conv2D(32, (3,3), padding='same', input_shape=in_shape, activation='relu'))
-    #model.add(LeakyReLU())
-    model.add(Conv2D(16, (3,3), padding='same', activation='relu'))
-    #model.add(LeakyReLU())
+    model.add(Conv2D(32, (3,3), padding='same', input_shape=in_shape))
+    model.add(LeakyReLU(alpha=a))
+    model.add(Conv2D(16, (3,3), padding='same'))
+    model.add(LeakyReLU(alpha=a))
     model.add(MaxPooling2D(pool_size=(3,3), strides=(2,2)))
 
     # This looks like what they call l2 in the code
-    model.add(Conv2D(64, (3,3), padding='same', activation='relu'))
-    #model.add(LeakyReLU())
-    model.add(Conv2D(32, (3,3), padding='same', activation='relu'))
-    #model.add(LeakyReLU())
+    model.add(Conv2D(64, (3,3), padding='same'))
+    model.add(LeakyReLU(alpha=a))
+    model.add(Conv2D(32, (3,3), padding='same'))
+    model.add(LeakyReLU(alpha=a))
     model.add(MaxPooling2D(pool_size=(3,3), strides=(2,2)))
 
     # This looks like what they cal l3 in the code
-    model.add(Conv2D(128, (3,3), padding='same', activation='relu'))
-    #model.add(LeakyReLU())
-    model.add(Conv2D(128, (3,3), padding='same', activation='relu'))
-    #model.add(LeakyReLU())
-    model.add(Conv2D(64, (3,3), padding='same', activation='relu'))
-    #model.add(LeakyReLU())
+    model.add(Conv2D(128, (3,3), padding='same'))
+    model.add(LeakyReLU(alpha=a))
+    model.add(Conv2D(128, (3,3), padding='same'))
+    model.add(LeakyReLU(alpha=a))
+    model.add(Conv2D(64, (3,3), padding='same'))
+    model.add(LeakyReLU(alpha=a))
     model.add(MaxPooling2D(pool_size=(3,3), strides=(2,2)))
 
     # This looks like what they call l4 in the code
-    model.add(Conv2D(256, (3,3), padding='same', activation='relu'))
-    #model.add(LeakyReLU())
-    model.add(Conv2D(256, (3,3), padding='same', activation='relu'))
-    #model.add(LeakyReLU())
-    model.add(Conv2D(128, (3,3), padding='same', activation='relu'))
-    #model.add(LeakyReLU())
+    model.add(Conv2D(256, (3,3), padding='same'))
+    model.add(LeakyReLU(alpha=a))
+    model.add(Conv2D(256, (3,3), padding='same'))
+    model.add(LeakyReLU(alpha=a))
+    model.add(Conv2D(128, (3,3), padding='same'))
+    model.add(LeakyReLU(alpha=a))
     model.add(MaxPooling2D(pool_size=(3,3), strides=(2,2)))
     model.add(Flatten())
     model.add(Dropout(0.5))
 
     # This looks like what they call l5
-    model.add(Dense(256, activation='relu'))
+    model.add(Dense(256))
+    model.add(LeakyReLU(alpha=a))
     model.add(Dropout(0.5))
-    model.add(Dense(256, activation='relu'))
+    model.add(Dense(256))
+    model.add(LeakyReLU(alpha=a))
     model.add(Dropout(0.5))
 
     model.add(Dense(num_classes, activation='softmax'))
