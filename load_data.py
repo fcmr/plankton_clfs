@@ -1,10 +1,11 @@
 import numpy as np
 import os
-import skimage.io
 import glob
 import sys
 from sklearn.model_selection import StratifiedShuffleSplit
 from skimage.transform import resize
+from skimage.io import imread
+from math import floor
 
 """
 load_data load images from a directory where they are divided in subdirectories classes and the subdirectory name is the class name.
@@ -53,18 +54,43 @@ def main():
 	labels = np.zeros(n, dtype='int32')
 	i = 0
 	for path in paths:
-		images[i] = skimage.io.imread(path, as_grey=True)
+		images[i] = imread(path, as_grey=True)
 		class_name = os.path.basename(os.path.dirname(path))
 		labels[i] = classes.index(class_name)
 		i = i+1		
 
 	#resizing the images
-	target_shape = (100, 100, 1)
+	
+	target_shape = (95, 95, 1)
+	"""
 	new_imgs = np.zeros((len(images), target_shape[0], target_shape[1]))
 	for k in range(len(images)):
 		new_imgs[k] = resize(images[k], (target_shape[0],target_shape[1])).astype('float32')
 	new_shape = (len(images), target_shape[0], target_shape[1], target_shape[2])
 	images = np.reshape(new_imgs, new_shape)	
+	"""
+	
+	new_imgs = np.zeros((len(images), target_shape[0], target_shape[1]))
+	for k in range(len(images)):
+		current = images[k]
+		majorside = np.amax(current.shape)
+		majorside_idx = np.argmax(current.shape)
+		minorside = np.amin(current.shape)
+
+		factor = target_shape[0]/majorside
+		minorside_new = floor(minorside*factor)
+
+		if majorside_idx == 0:
+			current = resize(current, (target_shape[0],minorside_new))
+
+		if majorside_idx == 1:
+			current = resize(current, (minorside_new, target_shape[1]))
+
+		for i in range(current.shape[0]):
+			for j in range(current.shape[1]):
+				new_imgs[k,i,j] = current[i,j]
+
+	images = np.reshape(new_imgs, (len(images), target_shape[0], target_shape[1], target_shape[2]))
 		
 	print("Images and labels collected.")
 
