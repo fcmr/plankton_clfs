@@ -47,69 +47,37 @@ def LoadModel(in_shape, num_classes):
     # - In the original network, the bias for convolutional layers is set to 1.0
     # - The original network uses leaky_relu and there is support for leaky_relu
     # in keras
+    #Defining the model
     model = Sequential()
+    # this applies 32 convolution filters of size 3x3 each.
+    model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(95, 95, 1)))
+    model.add(Conv2D(32, (3, 3), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
 
-    a = 0.3
+    model.add(Conv2D(64, (3, 3), activation='relu'))
+    model.add(Conv2D(64, (3, 3), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
 
-    # This looks like they call l1 in the code
-    model.add(Conv2D(32, (3,3), padding='same', input_shape=in_shape))
-    model.add(LeakyReLU(alpha=a))
-    model.add(Conv2D(16, (3,3), padding='same'))
-    model.add(LeakyReLU(alpha=a))
-    model.add(MaxPooling2D(pool_size=(3,3), strides=(2,2)))
-
-    # This looks like what they call l2 in the code
-    model.add(Conv2D(64, (3,3), padding='same'))
-    model.add(LeakyReLU(alpha=a))
-    model.add(Conv2D(32, (3,3), padding='same'))
-    model.add(LeakyReLU(alpha=a))
-    model.add(MaxPooling2D(pool_size=(3,3), strides=(2,2)))
-
-    # This looks like what they cal l3 in the code
-    model.add(Conv2D(128, (3,3), padding='same'))
-    model.add(LeakyReLU(alpha=a))
-    model.add(Conv2D(128, (3,3), padding='same'))
-    model.add(LeakyReLU(alpha=a))
-    model.add(Conv2D(64, (3,3), padding='same'))
-    model.add(LeakyReLU(alpha=a))
-    model.add(MaxPooling2D(pool_size=(3,3), strides=(2,2)))
-
-    # This looks like what they call l4 in the code
-    model.add(Conv2D(256, (3,3), padding='same'))
-    model.add(LeakyReLU(alpha=a))
-    model.add(Conv2D(256, (3,3), padding='same'))
-    model.add(LeakyReLU(alpha=a))
-    model.add(Conv2D(128, (3,3), padding='same'))
-    model.add(LeakyReLU(alpha=a))
-    model.add(MaxPooling2D(pool_size=(3,3), strides=(2,2)))
     model.add(Flatten())
+    model.add(Dense(256, activation='relu'))
     model.add(Dropout(0.5))
-
-    # This looks like what they call l5
-    model.add(Dense(256))
-    model.add(LeakyReLU(alpha=a))
-    model.add(Dropout(0.5))
-    model.add(Dense(256))
-    model.add(LeakyReLU(alpha=a))
-    model.add(Dropout(0.5))
-
     model.add(Dense(num_classes, activation='softmax'))
+
+    sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
+
 
     return model
 
 batch_size = 32
 num_classes= 121
-epochs = 120
+epochs = 10 
 
 img_shape = (95, 95, 1)
 
 X_train, y_train, X_valid, y_valid = LoadTrainData(img_shape)
-
-#FIXME: zero mean unit variance
-#X_train = X_train.astype('float32')
-#X_valid = X_valid.astype('float32')
-#X_train /= 255.0
-#X_valid /= 255.0
 
 y_train = keras.utils.to_categorical(y_train, num_classes)
 y_valid = keras.utils.to_categorical(y_valid, num_classes)
@@ -117,18 +85,15 @@ y_valid = keras.utils.to_categorical(y_valid, num_classes)
 model = LoadModel(img_shape, num_classes)
 model.summary()
 
-#opt = keras.optimizers.rmsprop(lr=0.0001, decay=1e-6)
-#opt = SGD(lr=0.003, momentum=0.9)
-opt = keras.optimizers.Adam()
+#Training and evaluating
+model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs)
+scores = model.evaluate(X_valid, y_valid, verbose=1)
+print('Test loss:', scores[0])
+print('Test accuracy:', scores[1])
 
-
-model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
-
-#model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs)
-
+"""
 # FIXME: zero mean unit variance can be implemented by setting 1st and 3rd args
 # below to True
-
 datagen = ImageDataGenerator(
             featurewise_center=False,  # set input mean to 0 over the dataset
             samplewise_center=False,  # set each sample mean to 0
@@ -150,12 +115,9 @@ history = model.fit_generator(datagen.flow(X_train, y_train,
                     workers=4,
                     verbose=1)
 
-#model_path = os.path.join(save_dir, model_name)
-#model.save(model_path)
-#print('Saved trained model at %s ' % model_path)
-
 
 # Score trained model.
 scores = model.evaluate(X_valid, y_valid, verbose=1)
 print('Test loss:', scores[0])
 print('Test accuracy:', scores[1])
+"""
